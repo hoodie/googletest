@@ -5,7 +5,7 @@
 ## Mocking a Normal Class ##
 
 Given
-```
+```cpp
 class Foo {
   ...
   virtual ~Foo();
@@ -16,7 +16,7 @@ class Foo {
 };
 ```
 (note that `~Foo()` **must** be virtual) we can define its mock as
-```
+```cpp
 #include "gmock/gmock.h"
 
 class MockFoo : public Foo {
@@ -29,7 +29,7 @@ class MockFoo : public Foo {
 
 To create a "nice" mock object which ignores all uninteresting calls,
 or a "strict" mock object, which treats them as failures:
-```
+```cpp
 NiceMock<MockFoo> nice_foo;     // The type is a subclass of MockFoo.
 StrictMock<MockFoo> strict_foo; // The type is a subclass of MockFoo.
 ```
@@ -37,7 +37,7 @@ StrictMock<MockFoo> strict_foo; // The type is a subclass of MockFoo.
 ## Mocking a Class Template ##
 
 To mock
-```
+```cpp
 template <typename Elem>
 class StackInterface {
  public:
@@ -48,7 +48,7 @@ class StackInterface {
 };
 ```
 (note that `~StackInterface()` **must** be virtual) just append `_T` to the `MOCK_*` macros:
-```
+```cpp
 template <typename Elem>
 class MockStack : public StackInterface<Elem> {
  public:
@@ -64,7 +64,7 @@ If your mock function doesn't use the default calling convention, you
 can specify it by appending `_WITH_CALLTYPE` to any of the macros
 described in the previous two sections and supplying the calling
 convention as the first argument to the macro. For example,
-```
+```cpp
   MOCK_METHOD_1_WITH_CALLTYPE(STDMETHODCALLTYPE, Foo, bool(int n));
   MOCK_CONST_METHOD2_WITH_CALLTYPE(STDMETHODCALLTYPE, Bar, int(double x, double y));
 ```
@@ -81,7 +81,7 @@ The typical flow is:
   1. When a mock objects is destructed, Google Mock automatically verifies that all expectations on it have been satisfied.
 
 Here is an example:
-```
+```cpp
 using ::testing::Return;                            // #1
 
 TEST(BarTest, DoesThis) {
@@ -106,7 +106,7 @@ Google Mock has a **built-in default action** for any function that
 returns `void`, `bool`, a numeric value, or a pointer.
 
 To customize the default action for functions with return type `T` globally:
-```
+```cpp
 using ::testing::DefaultValue;
 
 // Sets the default value to be returned. T must be CopyConstructible.
@@ -120,7 +120,7 @@ DefaultValue<T>::Clear();
 ```
 
 To customize the default action for a particular method, use `ON_CALL()`:
-```
+```cpp
 ON_CALL(mock_object, method(matchers))
     .With(multi_argument_matcher)  ?
     .WillByDefault(action);
@@ -130,7 +130,7 @@ ON_CALL(mock_object, method(matchers))
 
 `EXPECT_CALL()` sets **expectations** on a mock method (How will it be
 called? What will it do?):
-```
+```cpp
 EXPECT_CALL(mock_object, method(matchers))
     .With(multi_argument_matcher)  ?
     .Times(cardinality)            ?
@@ -260,7 +260,7 @@ Notes:
   * The array being matched may be multi-dimensional (i.e. its elements can be arrays).
   * `m` in `Pointwise(m, ...)` should be a matcher for `::testing::tuple<T, U>` where `T` and `U` are the element type of the actual container and the expected container, respectively. For example, to compare two `Foo` containers where `Foo` doesn't support `operator==` but has an `Equals()` method, one might write:
 
-```
+```cpp
 using ::testing::get;
 MATCHER(FooEq, "") {
   return get<0>(arg).Equals(get<1>(arg));
@@ -394,14 +394,14 @@ The return value of the invoked function is used as the return value
 of the action.
 
 When defining a function or functor to be used with `Invoke*()`, you can declare any unused parameters as `Unused`:
-```
+```cpp
   double Distance(Unused, double x, double y) { return sqrt(x*x + y*y); }
   ...
   EXPECT_CALL(mock, Foo("Hi", _, _)).WillOnce(Invoke(Distance));
 ```
 
 In `InvokeArgument<N>(...)`, if an argument needs to be passed by reference, wrap it inside `ByRef()`. For example,
-```
+```cpp
   InvokeArgument<2>(5, string("Hi"), ByRef(foo))
 ```
 calls the mock function's #2 argument, passing to it `5` and `string("Hi")` by value, and `foo` by reference.
@@ -451,7 +451,7 @@ together.
 
 ## The After Clause ##
 
-```
+```cpp
 using ::testing::Expectation;
 ...
 Expectation init_x = EXPECT_CALL(foo, InitX());
@@ -465,7 +465,7 @@ says that `Bar()` can be called only after both `InitX()` and
 If you don't know how many pre-requisites an expectation has when you
 write it, you can use an `ExpectationSet` to collect them:
 
-```
+```cpp
 using ::testing::ExpectationSet;
 ...
 ExpectationSet all_inits;
@@ -490,7 +490,7 @@ each expectation in the chain a different name.  <i>All expected<br>
 calls</i> in the same sequence must occur in the order they are
 specified.
 
-```
+```cpp
 using ::testing::Sequence;
 Sequence s1, s2;
 ...
@@ -508,7 +508,7 @@ says that `Reset()` must be called before _both_ `GetSize()` _and_
 `Describe()`, and the latter two can occur in any order.
 
 To put many expectations in a sequence conveniently:
-```
+```cpp
 using ::testing::InSequence;
 {
   InSequence dummy;
@@ -525,7 +525,7 @@ strict order. The name `dummy` is irrelevant.)
 # Verifying and Resetting a Mock #
 
 Google Mock will verify the expectations on a mock object when it is destructed, or you can do it earlier:
-```
+```cpp
 using ::testing::Mock;
 ...
 // Verifies and removes the expectations on mock_obj;
@@ -540,14 +540,14 @@ Mock::VerifyAndClear(&mock_obj);
 
 You can also tell Google Mock that a mock object can be leaked and doesn't
 need to be verified:
-```
+```cpp
 Mock::AllowLeak(&mock_obj);
 ```
 
 # Mock Classes #
 
 Google Mock defines a convenient mock class template
-```
+```cpp
 class MockFunction<R(A1, ..., An)> {
  public:
   MOCK_METHODn(Call, R(A1, ..., An));
